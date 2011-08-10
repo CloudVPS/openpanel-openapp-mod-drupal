@@ -26,7 +26,7 @@ class Vhost						< uuid a5724803-66ee-4924-877e-60d7f76e40b1
 								< indexing manual
 								< uniquein class
 								< shortname vhost
-								< title Virtual Host
+								< title Drupal sites
 								< description Virtual host configuration
 								< explanation vhost.html
                                 < required id sitename adminpass admin
