@@ -1,0 +1,36 @@
+#!/bin/bash
+
+fatal() {
+    echo $1
+    exit 1
+}
+
+SITE_DOMAIN=$1
+
+[ ! -z $2 ] && fatal "Too many arguments"
+
+DRUSH=/usr/bin/drush
+MYSQL=/usr/bin/mysql
+OPTS="--defaults-file=/etc/mysql/debian.cnf"
+DRUPAL_DIR=/var/www
+
+[ -z ${SITE_DOMAIN} ] && fatal "Sitedomain not entered"
+[ -x ${MYSQL} ] || fatal "Could not find ${MYSQL}"
+[ -x ${DRUSH} ] || fatal "Could not find ${DRUSH}"
+
+SITEPREFS=$(drush -r ${DRUPAL_DIR} -l http://${SITE_DOMAIN}/ core-status)
+
+get_pref() {
+    PREF=$1
+    echo "${SITEPREFS}" | grep "${PREF}" | cut -f2 -d: | sed -e 's/ //g';
+}
+
+DBNAME=$(get_pref "Database name")
+MYSQL_USER=$(get_pref "Database username")
+SITE_DIR=$(get_pref "Site path")
+
+${MYSQL} ${OPTS} -e "DROP USER '${MYSQL_USER}'@'localhost';"
+${MYSQL} ${OPTS} -e "DROP DATABASE ${DBNAME};"
+${MYSQL} ${OPTS} -e "FLUSH PRIVILEGES;"
+
+rm -rf ${SITE_DIR}

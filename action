@@ -2,7 +2,9 @@
 . /var/openpanel/api/sh/module.sh
 
 Vhost.delete() {
-    exit 0
+	SITE_DOMAIN=$(coreval Vhost id)
+
+    authd runscript openapp-drupal-deletesite "${SITE_DOMAIN}"
 }
 
 Vhost.create() {

@@ -61,3 +61,4 @@ class Vhost						< uuid a5724803-66ee-4924-877e-60d7f76e40b1
 # ============================================================================
 authd scripts
 	script openapp-drupal-site-install
+	script openapp-drupal-deletesite
