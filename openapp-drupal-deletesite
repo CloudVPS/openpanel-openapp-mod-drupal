@@ -29,9 +29,18 @@ DBNAME=$(get_pref "Database name")
 MYSQL_USER=$(get_pref "Database username")
 SITE_DIR=$(get_pref "Site path")
 
+TMPDIR=$(mktemp -d $(pwd)/XXXXXXXXX)
+DATE=$(date +%Y%m%d)
+
+/usr/bin/mysqldump ${OPTS} ${DBNAME} | gzip > ${TMPDIR}/mysqldump.gz
+rsync -a ${DRUPAL_DIR}/${SITE_DIR} ${TMPDIR}
+
+tar -zcf /var/backups/${SITE_DOMAIN}.drupal.${DATE}.tgz ${TMPDIR}
+
 ${MYSQL} ${OPTS} -e "DROP USER '${MYSQL_USER}'@'localhost';"
 ${MYSQL} ${OPTS} -e "DROP DATABASE ${DBNAME};"
 ${MYSQL} ${OPTS} -e "FLUSH PRIVILEGES;"
 
 rm -rf ${DRUPAL_DIR}/${SITE_DIR}
+rm -rf ${TMPDIR}
 
