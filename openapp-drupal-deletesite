@@ -33,4 +33,5 @@ ${MYSQL} ${OPTS} -e "DROP USER '${MYSQL_USER}'@'localhost';"
 ${MYSQL} ${OPTS} -e "DROP DATABASE ${DBNAME};"
 ${MYSQL} ${OPTS} -e "FLUSH PRIVILEGES;"
 
-rm -rf ${SITE_DIR}
+rm -rf ${DRUPAL_DIR}/${SITE_DIR}
+
