@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -x
-
 SITE_DOMAIN=$1
 SITE_NAME=$2
 PASSWORD=$3
