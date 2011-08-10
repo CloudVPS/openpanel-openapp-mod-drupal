@@ -1,0 +1,63 @@
+# This file is part of OpenPanel - The Open Source Control Panel
+# OpenPanel is free software: you can redistribute it and/or modify it 
+# under the terms of the GNU General Public License as published by the Free 
+# Software Foundation, using version 3 of the License.
+#
+# Please note that use of the OpenPanel trademark may be subject to additional 
+# restrictions. For more information, please visit the Legal Information 
+# section of the OpenPanel website on http://www.openpanel.com/
+# ============================================================================
+# OpenPanel Apache2.module for virtual website hosting
+# ============================================================================
+module OpenAppDrupal			< uuid a03293b7-1cd0-4aaa-8b7a-84e3dddfecf2
+								< version 1
+								< languages en_EN
+								< apitype commandline
+								< getconfig true
+								< license GPLv3
+								< author OpenPanel
+								< url http://www.openpanel.com/
+
+# ============================================================================
+# CLASSES
+# ============================================================================
+class Vhost						< uuid a5724803-66ee-4924-877e-60d7f76e40b1
+								< version 2
+								< indexing manual
+								< uniquein class
+								< shortname vhost
+								< title Virtual Host
+								< description Virtual host configuration
+								< explanation vhost.html
+                                < required id sitename adminpass admin
+								< capabilities create delete
+								
+	string id					: Domainname
+								< regexp [:hostname:]
+								< example www.example.net
+								< tooltip The Servername of the vhost like 'www.example.com'
+								< gridwidth 62
+
+	string sitename				: Sitename
+								< example My first Drupal site
+								< tooltip The sitename of this site
+								< gridwidth 62
+	
+	password adminpass			: Admin password
+								< example sPswd13t
+                                < regexp [:password:]
+								< tooltip The password of user 'admin'
+								< gridwidth 16
+	
+	string admin				: Email address of site admin
+								< regexp [:email:]
+								< example webmaster@example.net
+								< flags enabled visible
+								< tooltip Email address for the website administrator (webmaster)
+								< gridhide true
+
+# ============================================================================
+# AUTHD
+# ============================================================================
+authd scripts
+	script openapp-drupal-site-install

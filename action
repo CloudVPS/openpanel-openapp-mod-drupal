@@ -1,0 +1,17 @@
+#!/bin/bash
+. /var/openpanel/api/sh/module.sh
+
+Vhost.delete() {
+    exit 0
+}
+
+Vhost.create() {
+	SITE_DOMAIN=$(coreval Vhost id)
+    SITE_NAME=$(coreval Vhost sitename)
+    PASSWORD=$(coreval Vhost adminpass)
+    SITE_ADMIN=$(coreval Vhost admin)
+
+    authd runuserscript www-data openapp-drupal-site-install "${SITE_DOMAIN}" "${SITE_NAME}" "${PASSWORD}" "$SITE_ADMIN}"
+}
+
+implement OpenAppDrupal.module

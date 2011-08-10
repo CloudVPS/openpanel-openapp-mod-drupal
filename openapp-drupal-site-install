@@ -1,0 +1,35 @@
+#!/bin/bash
+
+SITE_DOMAIN=$1
+SITE_NAME=$2
+PASSWORD=$3
+SITE_ADMIN=$4
+
+DRUSH=/usr/bin/drush
+MYSQL=/usr/bin/mysql
+OPTS="--defaults-file=/etc/mysql/debian.cnf"
+
+fatal() {
+    echo $1
+    exit 1
+}
+
+[ -z ${SITE_DOMAIN} ] && fatal "Sitedomain not entered"
+[ -z ${SITE_NAME} ] && fatal "Sitename not entered"
+[ -z ${PASSWORD} ] && fatal "Password not entered"
+[ -z ${SITE_ADMIN} ] && fatal "Siteadmin emailaddress not entered"
+
+[ -x ${DRUSH} ] || fatal "Could not find ${DRUSH}"
+[ -x ${MYSQL} ] || fatal "Could not find ${MYSQL}"
+
+DBNAME=${SITE_DOMAIN//./}
+DBNAME="drupal_"${DBNAME}
+
+MYSQL_USER=${SITE_DOMAIN//./}
+MYSQL_USER=${MYSQL_USER:0:16}
+PASSWORD=$(pwgen -s 10)
+
+${MYSQL} ${OPTS} -e "GRANT USAGE ON mysql.* TO '${MYSQL_USER}'@'localhost' IDENTIFIED BY '${PASSWORD}';"
+${MYSQL} ${OPTS} -e "GRANT ALL PRIVILEGES ON ${DBNAME}.* TO '${MYSQL_USER}'@'localhost';"
+
+${DRUSH} -y -l "${SITE_DOMAIN}" site-install --db-url=mysql://MYSQL_USER}:${PASSWORD}@localhost:3306/${DBNAME} --account-pass=${PASSWORD} --account-mail=${SITE_ADMIN}
