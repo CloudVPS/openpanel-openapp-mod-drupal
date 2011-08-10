@@ -11,7 +11,7 @@ Vhost.create() {
     PASSWORD=$(coreval Vhost adminpass)
     SITE_ADMIN=$(coreval Vhost admin)
 
-    authd runuserscript www-data openapp-drupal-site-install "${SITE_DOMAIN}" "${SITE_NAME}" "${PASSWORD}" "$SITE_ADMIN}"
+    authd runscript openapp-drupal-site-install "${SITE_DOMAIN}" "${SITE_NAME}" "${PASSWORD}" "$SITE_ADMIN}"
 }
 
 implement OpenAppDrupal.module
