@@ -1,14 +1,18 @@
 #!/bin/bash
 
+set -x
+
 SITE_DOMAIN=$1
 SITE_NAME=$2
 PASSWORD=$3
 SITE_ADMIN=$4
 
+[ ! -z $5 ] && exit 1
+
 DRUSH=/usr/bin/drush
 MYSQL=/usr/bin/mysql
 OPTS="--defaults-file=/etc/mysql/debian.cnf"
-DRUPAL_DIR=/var/ww
+DRUPAL_DIR=/var/www
 
 fatal() {
     echo $1
@@ -16,7 +20,7 @@ fatal() {
 }
 
 [ -z ${SITE_DOMAIN} ] && fatal "Sitedomain not entered"
-[ -z ${SITE_NAME} ] && fatal "Sitename not entered"
+[ -z "${SITE_NAME}" ] && fatal "Sitename not entered"
 [ -z ${PASSWORD} ] && fatal "Password not entered"
 [ -z ${SITE_ADMIN} ] && fatal "Siteadmin emailaddress not entered"
 
@@ -28,11 +32,32 @@ DBNAME="drupal_"${DBNAME}
 
 MYSQL_USER=${SITE_DOMAIN//./}
 MYSQL_USER=${MYSQL_USER:0:16}
-PASSWORD=$(pwgen -s 10)
+MYSQL_PASS=$(pwgen -s 10)
 
-${MYSQL} ${OPTS} -e "GRANT USAGE ON mysql.* TO '${MYSQL_USER}'@'localhost' IDENTIFIED BY '${PASSWORD}';"
+${MYSQL} ${OPTS} -e "GRANT USAGE ON mysql.* TO '${MYSQL_USER}'@'localhost' IDENTIFIED BY '${MYSQL_PASS}';"
 ${MYSQL} ${OPTS} -e "GRANT ALL PRIVILEGES ON ${DBNAME}.* TO '${MYSQL_USER}'@'localhost';"
+${MYSQL} ${OPTS} -e "FLUSH PRIVILEGES;"
 
-${DRUSH} -y -r ${DRUPAL_DIR} -l "${SITE_DOMAIN}" site-install --db-url=mysql://MYSQL_USER}:${PASSWORD}@localhost:3306/${DBNAME} --account-pass=${PASSWORD} --account-mail=${SITE_ADMIN}
+mkdir ${DRUPAL_DIR}/sites/${SITE_DOMAIN}
+cp ${DRUPAL_DIR}/sites/default/default.settings.php ${DRUPAL_DIR}/sites/${SITE_DOMAIN}/settings.php
+cat <<EOB >> ${DRUPAL_DIR}/sites/${SITE_DOMAIN}/settings.php
+\$databases = array (
+  'default' => 
+  array (
+    'default' => 
+    array (
+      'database' => '${DBNAME}',
+      'username' => '${MYSQL_USER}',
+      'password' => '${MYSQL_PASS}',
+      'host' => 'localhost',
+      'port' => '3306',
+      'driver' => 'mysql',
+      'prefix' => '',
+    ),
+  ),
+);
+EOB
+
+${DRUSH} -y -r ${DRUPAL_DIR} -l "http://${SITE_DOMAIN}/" site-install --db-url=mysql://${MYSQL_USER}:${MYSQL_PASS}@localhost:3306/${DBNAME} --account-pass=${PASSWORD} --account-mail=${SITE_ADMIN} --site-name="${SITE_NAME}"
 
 chown -R www-data:www-data ${DRUPAL_DIR}/sites
