@@ -20,6 +20,7 @@ install:
 	install -m 755 verify ${BUILD_ROOT}/var/openpanel/modules/OpenAppDrupal.module/verify
 	mkdir -p ${BUILD_ROOT}/var/openpanel/tools/
 	install -m 755 openapp-drupal-site-install ${BUILD_ROOT}/var/openpanel/tools/
+	install -m 755 openapp-drupal-deletesite ${BUILD_ROOT}/var/openpanel/tools/
 
 build:
 	mkmodulexml < module.def > module.xml
