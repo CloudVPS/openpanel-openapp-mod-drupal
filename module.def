@@ -21,14 +21,14 @@ module OpenAppDrupal			< uuid a03293b7-1cd0-4aaa-8b7a-84e3dddfecf2
 # ============================================================================
 # CLASSES
 # ============================================================================
-class Vhost						< uuid a5724803-66ee-4924-877e-60d7f76e40b1
+class Site						< uuid a5724803-66ee-4924-877e-60d7f76e40b1
 								< version 2
 								< indexing manual
 								< uniquein class
 								< shortname drupalsites
 								< title Drupal sites
 								< description Drupal multisite sites
-                                < required id sitename adminpass admin
+								< required id sitename adminpass admin
 								< capabilities create delete
 								
 	string id					: Domainname
@@ -54,6 +54,27 @@ class Vhost						< uuid a5724803-66ee-4924-877e-60d7f76e40b1
 								< flags enabled visible
 								< tooltip Email address for the website administrator (webmaster)
 								< gridhide true
+
+# ----------------------------------------------------------------------------
+class HTTPS                     < uuid 82497ad3-1642-4d18-b073-ca2f3814172f
+                                < version 1
+                                < requires Site
+                                < indexing manual
+                                < uniquein parent
+                                < singleton vhost
+                                < shortname vhost
+                                < title Drupal Virtual Host
+                                < description Virtual hosts for Drupal sites
+
+                                < capabilities create update delete
+
+    textarea aliases            : SiteAliases (one per line, if any)
+                                < textwidth 48
+                                < rows 12
+
+    textarea pem                : Certificate for HTTPS (if any)
+                                < textwidth 48
+                                < rows 12
 
 # ============================================================================
 # AUTHD
