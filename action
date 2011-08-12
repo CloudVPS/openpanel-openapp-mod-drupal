@@ -1,19 +1,121 @@
 #!/bin/bash
 . /var/openpanel/api/sh/module.sh
 
-Vhost.delete() {
-	SITE_DOMAIN=$(coreval Vhost id)
+Site.delete() {
+	SITE_DOMAIN=$(coreval Site id)
 
     authd runscript openapp-drupal-deletesite "${SITE_DOMAIN}"
 }
 
-Vhost.create() {
-	SITE_DOMAIN=$(coreval Vhost id)
-    SITE_NAME=$(coreval Vhost sitename)
-    PASSWORD=$(coreval Vhost adminpass)
-    SITE_ADMIN=$(coreval Vhost admin)
+Site.create() {
+    SITE_DOMAIN=$(coreval Site id)
+    SITE_NAME=$(coreval Site sitename)
+    PASSWORD=$(coreval Site adminpass)
+    SITE_ADMIN=$(coreval Site admin)
 
     authd runscript openapp-drupal-site-install "${SITE_DOMAIN}" "${SITE_NAME}" "${PASSWORD}" "${SITE_ADMIN}"
+}
+
+A2CONFDIR=/etc/apache2/sites-enabled
+SSLDIR=/etc/ssl/private
+
+restart_apache2() {
+
+cat <<EOB > $(pwd)/ssl-namevirtualhost.conf
+NameVirtualHost *:443
+EOB
+
+	[ ! -f /etc/apache2/conf.d/ssl-namevirtualhost.conf ] && authd installfile ssl-namevirtualhost.conf /etc/apache2/conf.d
+
+	authd reloadservice apache2
+}
+
+Vhost.delete() {
+	SERVERNAME=$(coreval Site id)
+
+	authd deletefile ${A2CONFDIR}/${SERVERNAME}.conf
+	[ -r ${A2CONFDIR}/${SERVERNAME}-ssl.conf ] && HTTPS.delete
+
+	restart_apache2
+}
+
+Vhost.create() {
+	SERVERNAME=$(coreval Site id)
+	WEBMASTER=$(coreval Site admin)
+    ALIASES=$(coreval Vhost aliases | tr '\n' ' ')
+    HTTPS=$(coreval Vhost pem)
+
+[ -z ${ALIASES} ] && ALIASES=${SERVERNAME}
+[ -z ${WEBMASTER} ] && WEBMASTER=webmaster@unknown
+
+cat <<EOB > $(pwd)/${SERVERNAME}.conf
+<VirtualHost *:80>
+	ServerAdmin ${WEBMASTER}
+	Servername ${SERVERNAME}
+    ServerAlias ${ALIASES}
+
+	DocumentRoot /var/www
+
+    CustomLog /var/log/apache2/${SERVERNAME}.access.log combined
+    ErrorLog  /var/log/apache2/${SERVERNAME}.error.log
+</VirtualHost>
+EOB
+
+	authd installfile ${SERVERNAME}.conf ${A2CONFDIR}
+
+    [ -z "${HTTPS}" ] || HTTPS.create
+
+	restart_apache2
+}
+
+HTTPS.delete() {
+	SERVERNAME=$(coreval Site id)
+
+	authd deletefile ${A2CONFDIR}/${SERVERNAME}-ssl.conf
+	authd deletedir ${SSLDIR}/${SERVERNAME}.pem
+
+	restart_apache2
+}
+
+HTTPS.create() {
+	SSLCERT=$(coreval Vhost pem)
+	SERVERNAME=$(coreval Site id)
+	WEBMASTER=$(coreval Site admin)
+
+    SSLIP="*"
+
+    ALIASES=$(coreval Vhost aliases | tr '\n' ' ')
+
+    [ -z ${ALIASES} ] && ALIASES=${SERVERNAME}
+
+cat <<EOB > $(pwd)/${SERVERNAME}.pem
+${SSLCERT}
+EOB
+
+/var/openpanel/bin/validatepem.py $(pwd)/${SERVERNAME}.pem
+
+[ $? -eq 0 ] || exiterror "Your certificate has issues. Is the private key included (and without a passphrase)?"
+
+cat <<EOB > $(pwd)/${SERVERNAME}-ssl.conf
+<VirtualHost ${SSLIP}:443>
+	ServerAdmin ${WEBMASTER}
+	Servername ${SERVERNAME}
+    ServerAlias ${ALIASES}
+
+	DocumentRoot /var/www/
+
+	SSLEngine on
+	SSLProtocol -all +TLSv1 +SSLv3
+	SSLCertificateFile ${SSLDIR}/${SERVERNAME}.pem
+</VirtualHost>
+EOB
+
+	authd installfile ${SERVERNAME}.pem ${SSLDIR}
+	authd installfile ${SERVERNAME}-ssl.conf ${A2CONFDIR}
+}
+
+Vhost.update() {
+	Vhost.create
 }
 
 implement OpenAppDrupal.module
