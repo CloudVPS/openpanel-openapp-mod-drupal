@@ -22,7 +22,7 @@ module OpenAppDrupal			< uuid a03293b7-1cd0-4aaa-8b7a-84e3dddfecf2
 # CLASSES
 # ============================================================================
 class Site						< uuid a5724803-66ee-4924-877e-60d7f76e40b1
-								< version 2
+								< version 1
 								< indexing manual
 								< uniquein class
 								< shortname drupalsites
