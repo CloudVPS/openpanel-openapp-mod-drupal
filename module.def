@@ -25,10 +25,9 @@ class Vhost						< uuid a5724803-66ee-4924-877e-60d7f76e40b1
 								< version 2
 								< indexing manual
 								< uniquein class
-								< shortname vhost
+								< shortname drupalsites
 								< title Drupal sites
-								< description Virtual host configuration
-								< explanation vhost.html
+								< description Drupal multisite sites
                                 < required id sitename adminpass admin
 								< capabilities create delete
 								
