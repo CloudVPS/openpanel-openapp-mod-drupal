@@ -1,0 +1,73 @@
+#!/usr/bin/php
+<?
+
+$output = "<?php\n\n";
+$output .= "\$sites = array();\n";
+
+if (file_exists("/var/www/sites/sites.php")) {
+	include("/var/www/sites/sites.php");
+}
+
+if (!isset($argv[1])) {
+	print "Not enough commands\n";
+	exit(1);
+} elseif ($argv[1] == "addalias") {
+	add_alias($argv);
+} elseif ($argv[1] == "removealias") {
+	remove_alias($argv);
+} elseif ($argv[1] == "removesite") {
+	remove_site($argv);
+} else {
+	echo "Unknown command\n";
+	exit(1);
+}
+
+function add_alias($input) {
+	global $sites;
+	list($site, $alias) = array($input[2], $input[3]);
+
+	if (count($sites) > 0) {
+		foreach (array_keys($sites) as $src_alias) {
+			if ($src_alias == $alias) {
+				echo "This hostname is already an alias for a site\n";
+				exit(0);
+			}
+		}
+	}
+
+	$sites[$alias] = $site;
+}
+
+function remove_alias($input) {
+	global $sites;
+	list($site, $alias) = array($input[2], $input[3]);
+
+	foreach (array_keys($sites) as $src_alias) {
+		if ($src_alias == $alias) {
+			$sites[$alias] = "delete";
+		}
+	}
+}
+
+function remove_site($input) {
+	global $sites;
+	$site = $input[2];
+
+	foreach (array_keys($sites) as $src_alias) {
+		if ($sites[$src_alias] == $site) {
+			$sites[$src_alias] = "delete";
+		}
+	}
+
+}
+foreach (array_keys($sites) as $site) {
+	if ($sites[$site] != "delete") {
+		$output .= "\$sites['$site'] = \"".$sites[$site]."\";\n";
+	}
+}
+
+$output .= "?>";
+
+file_put_contents("/var/www/sites/sites.php", $output);
+
+?>

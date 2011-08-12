@@ -2,8 +2,9 @@
 . /var/openpanel/api/sh/module.sh
 
 Site.delete() {
-	SITE_DOMAIN=$(coreval Site id)
+    SITE_DOMAIN=$(coreval Site id)
 
+    authd runscript openapp-drupal-sitealias removesite ${SERVERNAME}
     authd runscript openapp-drupal-deletesite "${SITE_DOMAIN}"
 }
 
@@ -25,28 +26,32 @@ cat <<EOB > $(pwd)/ssl-namevirtualhost.conf
 NameVirtualHost *:443
 EOB
 
-	[ ! -f /etc/apache2/conf.d/ssl-namevirtualhost.conf ] && authd installfile ssl-namevirtualhost.conf /etc/apache2/conf.d
+    [ ! -f /etc/apache2/conf.d/ssl-namevirtualhost.conf ] && authd installfile ssl-namevirtualhost.conf /etc/apache2/conf.d
 
-	authd reloadservice apache2
+    authd reloadservice apache2
 }
 
 Vhost.delete() {
-	SERVERNAME=$(coreval Site id)
+    SERVERNAME=$(coreval Site id)
 
-	authd deletefile ${A2CONFDIR}/${SERVERNAME}.conf
-	[ -r ${A2CONFDIR}/${SERVERNAME}-ssl.conf ] && HTTPS.delete
+    authd deletefile ${A2CONFDIR}/${SERVERNAME}.conf
+    [ -r ${A2CONFDIR}/${SERVERNAME}-ssl.conf ] && HTTPS.delete
 
-	restart_apache2
+    restart_apache2
 }
 
 Vhost.create() {
-	SERVERNAME=$(coreval Site id)
-	WEBMASTER=$(coreval Site admin)
+    SERVERNAME=$(coreval Site id)
+    WEBMASTER=$(coreval Site admin)
     ALIASES=$(coreval Vhost aliases | tr '\n' ' ')
     HTTPS=$(coreval Vhost pem)
 
-[ -z ${ALIASES} ] && ALIASES=${SERVERNAME}
-[ -z ${WEBMASTER} ] && WEBMASTER=webmaster@unknown
+    [ -z ${ALIASES} ] && ALIASES=${SERVERNAME}
+    [ -z ${WEBMASTER} ] && WEBMASTER=webmaster@unknown
+
+    for ALIAS in ${ALIASES}; do
+        authd runscript openapp-drupal-sitealias addalias ${SERVERNAME} ${ALIAS}
+    done
 
 cat <<EOB > $(pwd)/${SERVERNAME}.conf
 <VirtualHost *:80>
@@ -61,26 +66,26 @@ cat <<EOB > $(pwd)/${SERVERNAME}.conf
 </VirtualHost>
 EOB
 
-	authd installfile ${SERVERNAME}.conf ${A2CONFDIR}
+    authd installfile ${SERVERNAME}.conf ${A2CONFDIR}
 
     [ -z "${HTTPS}" ] || HTTPS.create
 
-	restart_apache2
+    restart_apache2
 }
 
 HTTPS.delete() {
-	SERVERNAME=$(coreval Site id)
+    SERVERNAME=$(coreval Site id)
 
-	authd deletefile ${A2CONFDIR}/${SERVERNAME}-ssl.conf
-	authd deletedir ${SSLDIR}/${SERVERNAME}.pem
+    authd deletefile ${A2CONFDIR}/${SERVERNAME}-ssl.conf
+    authd deletedir ${SSLDIR}/${SERVERNAME}.pem
 
-	restart_apache2
+    restart_apache2
 }
 
 HTTPS.create() {
-	SSLCERT=$(coreval Vhost pem)
-	SERVERNAME=$(coreval Site id)
-	WEBMASTER=$(coreval Site admin)
+    SSLCERT=$(coreval Vhost pem)
+    SERVERNAME=$(coreval Site id)
+    WEBMASTER=$(coreval Site admin)
 
     SSLIP="*"
 
@@ -92,9 +97,9 @@ cat <<EOB > $(pwd)/${SERVERNAME}.pem
 ${SSLCERT}
 EOB
 
-/var/openpanel/bin/validatepem.py $(pwd)/${SERVERNAME}.pem
+    /var/openpanel/bin/validatepem.py $(pwd)/${SERVERNAME}.pem
 
-[ $? -eq 0 ] || exiterror "Your certificate has issues. Is the private key included (and without a passphrase)?"
+    [ $? -eq 0 ] || exiterror "Your certificate has issues. Is the private key included (and without a passphrase)?"
 
 cat <<EOB > $(pwd)/${SERVERNAME}-ssl.conf
 <VirtualHost ${SSLIP}:443>
@@ -110,12 +115,16 @@ cat <<EOB > $(pwd)/${SERVERNAME}-ssl.conf
 </VirtualHost>
 EOB
 
-	authd installfile ${SERVERNAME}.pem ${SSLDIR}
-	authd installfile ${SERVERNAME}-ssl.conf ${A2CONFDIR}
+    authd installfile ${SERVERNAME}.pem ${SSLDIR}
+    authd installfile ${SERVERNAME}-ssl.conf ${A2CONFDIR}
 }
 
 Vhost.update() {
-	Vhost.create
+    SERVERNAME=$(coreval Site id)
+
+    authd runscript openapp-drupal-sitealias removesite ${SERVERNAME}
+
+    Vhost.create
 }
 
 implement OpenAppDrupal.module

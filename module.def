@@ -9,51 +9,51 @@
 # ============================================================================
 # OpenPanel Apache2.module for virtual website hosting
 # ============================================================================
-module OpenAppDrupal			< uuid a03293b7-1cd0-4aaa-8b7a-84e3dddfecf2
-								< version 1
-								< languages en_EN
-								< apitype commandline
-								< getconfig true
-								< license GPLv3
-								< author OpenPanel
-								< url http://www.openpanel.com/
+module OpenAppDrupal            < uuid a03293b7-1cd0-4aaa-8b7a-84e3dddfecf2
+                                < version 1
+                                < languages en_EN
+                                < apitype commandline
+                                < getconfig true
+                                < license GPLv3
+                                < author OpenPanel
+                                < url http://www.openpanel.com/
 
 # ============================================================================
 # CLASSES
 # ============================================================================
-class Site						< uuid a5724803-66ee-4924-877e-60d7f76e40b1
-								< version 1
-								< indexing manual
-								< uniquein class
-								< shortname drupalsites
-								< title Drupal sites
-								< description Drupal multisite sites
-								< required id sitename adminpass admin
-								< capabilities create delete
+class Site                      < uuid a5724803-66ee-4924-877e-60d7f76e40b1
+                                < version 1
+                                < indexing manual
+                                < uniquein class
+                                < shortname drupalsites
+                                < title Drupal sites
+                                < description Drupal multisite sites
+                                < required id sitename adminpass admin
+                                < capabilities create delete
 								
-	string id					: Domainname
-								< regexp [:hostname:]
-								< example www.example.net
-								< tooltip The Servername of the vhost like 'www.example.com'
-								< gridwidth 62
+	string id                   : Domainname
+                                < regexp [:hostname:]
+                                < example www.example.net
+                                < tooltip The Servername of the vhost like 'www.example.com'
+                                < gridwidth 62
 
-	string sitename				: Sitename
-								< example My first Drupal site
-								< tooltip The sitename of this site
-								< gridwidth 62
+	string sitename             : Sitename
+                                < example My first Drupal site
+                                < tooltip The sitename of this site
+                                < gridwidth 62
 	
-	password adminpass			: Admin password
-								< example sPswd13t
+	password adminpass          : Admin password
+                                < example sPswd13t
                                 < regexp [:password:]
-								< tooltip The password of user 'admin'
-								< gridwidth 16
+                                < tooltip The password of user 'admin'
+                                < gridwidth 16
 	
-	string admin				: Email address of site admin
-								< regexp [:email:]
-								< example webmaster@example.net
-								< flags enabled visible
-								< tooltip Email address for the website administrator (webmaster)
-								< gridhide true
+	string admin                : Email address of site admin
+                                < regexp [:email:]
+                                < example webmaster@example.net
+                                < flags enabled visible
+                                < tooltip Email address for the website administrator (webmaster)
+                                < gridhide true
 
 # ----------------------------------------------------------------------------
 class Vhost                     < uuid 82497ad3-1642-4d18-b073-ca2f3814172f
@@ -83,3 +83,34 @@ class Vhost                     < uuid 82497ad3-1642-4d18-b073-ca2f3814172f
 authd scripts
 	script openapp-drupal-site-install
 	script openapp-drupal-deletesite
+	script openapp-drupal-sitealias
+# ----------------------------------------------------------------------------
+authd fileops
+    match *.conf                : /etc/apache2/sites-enabled
+                                < user root
+                                < group root
+                                < perms 0644
+
+    match **.conf               : /etc/apache2/conf.d
+                                < user root
+                                < group root
+                                < perms 0644
+
+    match *                     : /etc/ssl/private
+                                < user root
+                                < group ssl-cert
+                                < perms 0750
+
+    match *.pem                 : /etc/ssl/private
+                                < user root
+                                < group root
+                                < perms 0600
+
+    match *                     : /var/www/*
+                                < user www-data
+                                < group www-data
+                                < perms 0755
+# ----------------------------------------------------------------------------
+authd services
+    service apache2
+
