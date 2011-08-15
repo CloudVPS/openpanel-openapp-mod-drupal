@@ -136,3 +136,6 @@ authd fileops
 authd services
     service apache2
 
+authd scripts
+    script openapp-call
+
