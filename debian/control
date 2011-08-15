@@ -8,6 +8,6 @@ Standards-Version: 3.7.2
 Package: openpanel-openapp-mod-drupal
 Architecture: any
 Pre-Depends: openpanel-core, openpanel-authd
-Depends: openpanel-core, openpanel-api-sh, ${shlibs:Depends}, ${misc:Depends}, mysql-server, mysql-client, pwgen, openapp-drush-installer, php5-cli, openapp-validatepem, openapp-awstats
+Depends: openpanel-core, openpanel-api-sh, ${shlibs:Depends}, ${misc:Depends}, mysql-server, mysql-client, pwgen, openapp-drush-installer, php5-cli, openpanel-validatepem, openapp-awstats
 Description: OpenPanel module to manage OpenApp Drupal
   manage the OpenApp Drupal
