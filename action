@@ -5,7 +5,7 @@ Site.delete() {
     SITE_DOMAIN=$(coreval Site id)
 
     authd runscript openapp-drupal-sitealias removesite ${SERVERNAME}
-    authd runscript openapp-drupal-deletesite "${SITE_DOMAIN}"
+    authd runscript openapp-drupal-deletesite "${SITE_DOMAIN}" || exiterror "Error while removing site"
 }
 
 Site.create() {
