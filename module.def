@@ -21,6 +21,23 @@ module OpenAppDrupal            < uuid a03293b7-1cd0-4aaa-8b7a-84e3dddfecf2
 # ============================================================================
 # CLASSES
 # ============================================================================
+class Awstats                   < uuid 1228869a-7461-455b-a4dd-7289dac716f8
+								< version 2
+								< indexing manual
+								< uniquein class
+								< shortname awstats
+								< title Awstats
+								< description Awstats password
+                                < required awstatspass
+								
+								< capabilities update
+								
+    password awstatspass        : Awstats password (user 'admin')
+                                < textwidth 16
+                                < example sPswd13t
+                                < regexp [:password:]
+                                < tooltip Entering a password here will enable awstats for your site. The username is 'admin' and the url is http://example.com/cgi-bin/awstats.pl
+
 class Site                      < uuid a5724803-66ee-4924-877e-60d7f76e40b1
                                 < version 1
                                 < indexing manual

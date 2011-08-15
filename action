@@ -1,6 +1,11 @@
 #!/bin/bash
 . /var/openpanel/api/sh/module.sh
 
+Awstats.update() {
+  awstats=$(coreval Awstats awstatspass)
+  authd runscript openapp-call "awstats" passwd "${awstats}"
+}
+
 Site.delete() {
     SITE_DOMAIN=$(coreval Site id)
 
