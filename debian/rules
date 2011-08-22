@@ -15,9 +15,11 @@ install:
 	rm -rf ${BUILD_ROOT}
 	mkdir -p ${BUILD_ROOT}/var/openpanel/modules/OpenAppDrupal.module
 	mkdir -p ${BUILD_ROOT}/var/openpanel/wallpaper
+	mkdir -p ${BUILD_ROOT}/var/openpanel/http/images
 	install -m 755 action ${BUILD_ROOT}/var/openpanel/modules/OpenAppDrupal.module/action
 	cp module.xml ${BUILD_ROOT}/var/openpanel/modules/OpenAppDrupal.module/module.xml
 	cp *.png ${BUILD_ROOT}/var/openpanel/modules/OpenAppDrupal.module/
+	mv ${BUILD_ROOT}/var/openpanel/modules/OpenAppDrupal.module/logo.png ${BUILD_ROOT}/var/openpanel/http/images/OpenPanelLogo.png
 	cp wallpaper.jpg ${BUILD_ROOT}/var/openpanel/wallpaper/default.jpg
 	install -m 755 verify ${BUILD_ROOT}/var/openpanel/modules/OpenAppDrupal.module/verify
 	mkdir -p ${BUILD_ROOT}/var/openpanel/tools/
