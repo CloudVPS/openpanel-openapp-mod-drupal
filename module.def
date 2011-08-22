@@ -30,7 +30,7 @@ class Awstats                   < uuid 1228869a-7461-455b-a4dd-7289dac716f8
                                 < description Awstats password
                                 < singleton Awstats
                                 < sortindex 10
-                                < icon user.png
+                                < icon awstats.png
                             
                                 < capabilities update
                                 < listview awstatspass
@@ -52,6 +52,8 @@ class Site                      < uuid a5724803-66ee-4924-877e-60d7f76e40b1
                                 < description Drupal multisite sites
                                 < required id sitename adminpass admin
                                 < capabilities create delete
+				< sortindex 20
+				< icon site.png
 								
 	string id                   : Domainname
                                 < regexp [:hostname:]
