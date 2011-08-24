@@ -89,17 +89,18 @@ class Vhost                     < uuid 82497ad3-1642-4d18-b073-ca2f3814172f
                                 < shortname vhost
                                 < title Drupal Virtual Host
                                 < description Virtual hosts for Drupal sites
-                                < required
 
                                 < capabilities create update delete
 
     textarea aliases            : SiteAliases (one per line, if any)
                                 < textwidth 48
                                 < rows 12
+				< flags enabled visible
 
     textarea pem                : Certificate for HTTPS (if any)
                                 < textwidth 48
                                 < rows 12
+				< flags enabled visible
 
 # ============================================================================
 # AUTHD
