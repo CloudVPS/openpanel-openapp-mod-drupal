@@ -6,22 +6,6 @@ Awstats.update() {
   authd runscript openapp-call "awstats" passwd "${awstats}"
 }
 
-Site.delete() {
-    SITE_DOMAIN=$(coreval Site id)
-
-    authd runscript openapp-drupal-sitealias removesite ${SERVERNAME}
-    authd runscript openapp-drupal-deletesite "${SITE_DOMAIN}" || exiterror "Error while removing site"
-}
-
-Site.create() {
-    SITE_DOMAIN=$(coreval Site id)
-    SITE_NAME=$(coreval Site sitename)
-    PASSWORD=$(coreval Site adminpass)
-    SITE_ADMIN=$(coreval Site admin)
-
-    authd runscript openapp-drupal-site-install "${SITE_DOMAIN}" "${SITE_NAME}" "${PASSWORD}" "${SITE_ADMIN}"
-}
-
 A2CONFDIR=/etc/apache2/sites-enabled
 SSLDIR=/etc/ssl/private
 
@@ -36,46 +20,61 @@ EOB
     authd reloadservice apache2
 }
 
-Vhost.delete() {
-    SERVERNAME=$(coreval Site id)
+Site.delete() {
+    SITE_DOMAIN=$(coreval Site id)
 
-    authd deletefile ${A2CONFDIR}/${SERVERNAME}.conf
-    [ -r ${A2CONFDIR}/${SERVERNAME}-ssl.conf ] && HTTPS.delete
+    authd runscript openapp-drupal-sitealias removesite ${SITE_DOMAIN}
+    authd runscript openapp-drupal-deletesite "${SITE_DOMAIN}" || exiterror "Error while removing site"
+
+    authd deletefile ${A2CONFDIR}/${SITE_DOMAIN}.conf
+    [ -r ${A2CONFDIR}/${SITE_DOMAIN}-ssl.conf ] && HTTPS.delete
 
     restart_apache2
 }
 
-Vhost.create() {
-    SERVERNAME=$(coreval Site id)
-    WEBMASTER=$(coreval Site admin)
-    ALIASES=$(coreval Vhost aliases | tr '\n' ' ')
-    HTTPS=$(coreval Vhost pem)
+Site.update() {
+    SITE_DOMAIN=$(coreval Site id)
+    SITE_NAME=$(coreval Site sitename)
+    PASSWORD=$(coreval Site adminpass)
+    SITE_ADMIN=$(coreval Site admin)
+    ALIASES=$(coreval Site aliases | tr '\n' ' ')
 
-    [ -z ${ALIASES} ] && ALIASES=${SERVERNAME}
-    [ -z ${WEBMASTER} ] && WEBMASTER=webmaster@unknown
+    [ -z ${ALIASES} ] && ALIASES=${SITE_DOMAIN}
+    [ -z ${SITE_ADMIN} ] && SITE_ADMIN=webmaster@unknown
+
+    authd runscript openapp-drupal-sitealias removesite ${SITE_DOMAIN}
 
     for ALIAS in ${ALIASES}; do
-        authd runscript openapp-drupal-sitealias addalias ${SERVERNAME} ${ALIAS}
+        authd runscript openapp-drupal-sitealias addalias ${SITE_DOMAIN} ${ALIAS}
     done
 
-cat <<EOB > $(pwd)/${SERVERNAME}.conf
+cat <<EOB > $(pwd)/${SITE_DOMAIN}.conf
 <VirtualHost *:80>
-	ServerAdmin ${WEBMASTER}
-	Servername ${SERVERNAME}
+	ServerAdmin ${SITE_ADMIN}
+	Servername ${SITE_DOMAIN}
     ServerAlias ${ALIASES}
 
 	DocumentRoot /var/www
 
-    CustomLog /var/log/apache2/${SERVERNAME}.access.log combined
-    ErrorLog  /var/log/apache2/${SERVERNAME}.error.log
+    CustomLog /var/log/apache2/${SITE_DOMAIN}.access.log combined
+    ErrorLog  /var/log/apache2/${SITE_DOMAIN}.error.log
 </VirtualHost>
 EOB
 
-    authd installfile ${SERVERNAME}.conf ${A2CONFDIR}
-
-    [ -z "${HTTPS}" ] || HTTPS.create
+    authd installfile ${SITE_DOMAIN}.conf ${A2CONFDIR}
 
     restart_apache2
+}
+
+Site.create() {
+    SITE_DOMAIN=$(coreval Site id)
+    SITE_NAME=$(coreval Site sitename)
+    PASSWORD=$(coreval Site adminpass)
+    SITE_ADMIN=$(coreval Site admin)
+
+    authd runscript openapp-drupal-site-install "${SITE_DOMAIN}" "${SITE_NAME}" "${PASSWORD}" "${SITE_ADMIN}"
+
+    Site.update
 }
 
 HTTPS.delete() {
@@ -88,13 +87,13 @@ HTTPS.delete() {
 }
 
 HTTPS.create() {
-    SSLCERT=$(coreval Vhost pem)
+    SSLCERT=$(coreval HTTPS pem)
     SERVERNAME=$(coreval Site id)
     WEBMASTER=$(coreval Site admin)
 
     SSLIP="*"
 
-    ALIASES=$(coreval Vhost aliases | tr '\n' ' ')
+    ALIASES=$(coreval Site aliases | tr '\n' ' ')
 
     [ -z ${ALIASES} ] && ALIASES=${SERVERNAME}
 
@@ -127,12 +126,8 @@ EOB
     authd installfile ${SERVERNAME}-ssl.conf ${A2CONFDIR}
 }
 
-Vhost.update() {
-    SERVERNAME=$(coreval Site id)
-
-    authd runscript openapp-drupal-sitealias removesite ${SERVERNAME}
-
-    Vhost.create
+HTTPS.update() {
+    HTTPS.create
 }
 
 Module.getconfig() {
@@ -147,4 +142,5 @@ Module.getconfig() {
 _EOF_
   exitquiet
 }
+
 implement OpenAppDrupal.module

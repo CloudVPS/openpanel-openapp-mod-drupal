@@ -52,8 +52,9 @@ class Site                      < uuid a5724803-66ee-4924-877e-60d7f76e40b1
                                 < description Drupal multisite sites
                                 < required id sitename adminpass admin
                                 < capabilities create delete
-				< sortindex 20
-				< icon site.png
+ 				< sortindex 20
+ 				< icon site.png
+
 								
 	string id                   : Domainname
                                 < regexp [:hostname:]
@@ -79,28 +80,26 @@ class Site                      < uuid a5724803-66ee-4924-877e-60d7f76e40b1
                                 < tooltip Email address for the website administrator (webmaster)
                                 < gridhide true
 
+	textarea aliases            : SiteAliases (one per line, if any)
+                                < textwidth 48
+                                < rows 12
+
 # ----------------------------------------------------------------------------
-class Vhost                     < uuid 82497ad3-1642-4d18-b073-ca2f3814172f
+class HTTPS                     < uuid 82497ad3-1642-4d18-b073-ca2f3814172f
                                 < version 1
                                 < requires Site
                                 < indexing manual
                                 < uniquein parent
-                                < singleton vhost
-                                < shortname vhost
-                                < title Drupal Virtual Host
-                                < description Virtual hosts for Drupal sites
+                                < singleton https
+                                < shortname https
+                                < title Drupal Virtual Host HTTPS Settings
+                                < description HTTPS Settings for Drupal sites
 
                                 < capabilities create update delete
 
-    textarea aliases            : SiteAliases (one per line, if any)
+    textarea pem                : Certificate for HTTPS
                                 < textwidth 48
                                 < rows 12
-				< flags enabled visible
-
-    textarea pem                : Certificate for HTTPS (if any)
-                                < textwidth 48
-                                < rows 12
-				< flags enabled visible
 
 # ============================================================================
 # AUTHD
