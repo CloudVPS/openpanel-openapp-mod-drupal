@@ -40,11 +40,13 @@ Site.update() {
     SITE_ADMIN=$(coreval Site admin)
     ALIASES=$(coreval Site aliases | tr '\n' ' ')
 
-    [ -z ${ALIASES} ] && ALIASES=${SITE_DOMAIN}
+    [ -z "${ALIASES}" ] && ALIASES=${SITE_DOMAIN}
     [ -z ${SITE_ADMIN} ] && SITE_ADMIN=webmaster@unknown
 
+    [ -z ${PASSWORD} ] && PASSWORD=nochange
+
     authd runscript openapp-drupal-sitealias removesite ${SITE_DOMAIN}
-    authd runscript openapp-drupal-site-adminsettings "${SITE_DOMAIN}" "${PASSWORD}" "${SITE_ADMIN}" "${SITE_NAME}"
+    authd runscript openapp-drupal-site-adminsettings ${SITE_DOMAIN} ${PASSWORD} ${SITE_ADMIN} "${SITE_NAME}"
 
     for ALIAS in ${ALIASES}; do
         authd runscript openapp-drupal-sitealias addalias ${SITE_DOMAIN} ${ALIAS}
