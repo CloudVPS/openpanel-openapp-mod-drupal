@@ -29,6 +29,7 @@ set -e
 case "$1" in
     configure)
         mkdir -p /var/openpanel/conf/staging/OpenAppDrupal
+        mkdir -p /etc/apache2/drupal-aliases
         chown openpanel-core:openpanel-authd /var/openpanel/conf/staging/OpenAppDrupal
         invoke-rc.d openpanel-core reload
     ;;

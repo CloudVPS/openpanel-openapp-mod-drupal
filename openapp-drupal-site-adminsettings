@@ -1,0 +1,26 @@
+#!/bin/bash
+
+SITE_DOMAIN=$1
+PASSWORD=$2
+SITE_ADMIN=$3
+SITE_NAME=$4
+
+[ ! -z $5 ] && exit 1
+
+DRUSH=/usr/bin/drush
+DRUPAL_DIR=/var/www
+
+fatal() {
+    echo $1
+    exit 1
+}
+
+[ -z ${SITE_DOMAIN} ] && fatal "Sitedomain not entered"
+[ -z ${PASSWORD} ] && fatal "Password not entered"
+[ -z ${SITE_ADMIN} ] && fatal "Siteadmin emailaddress not entered"
+
+[ -x ${DRUSH} ] || fatal "Could not find ${DRUSH}"
+
+${DRUSH} -y -r ${DRUPAL_DIR} -l "http://${SITE_DOMAIN}/" user-password --password="${PASSWORD}"
+${DRUSH} -y -r ${DRUPAL_DIR} -l "http://${SITE_DOMAIN}/" variable-set --yes site_name "${SITE_NAME}"
+${DRUSH} -y -r ${DRUPAL_DIR} -l "http://${SITE_DOMAIN}/" sql-query "UPDATE USERS SET init = '${SITE_ADMIN}' where name='admin'"

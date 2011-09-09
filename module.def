@@ -51,36 +51,36 @@ class Site                      < uuid a5724803-66ee-4924-877e-60d7f76e40b1
                                 < title Drupal sites
                                 < description Drupal multisite sites
                                 < required id sitename adminpass admin
-                                < capabilities create delete
- 				< sortindex 20
- 				< icon site.png
+                                < capabilities create delete update
+                                < sortindex 20
+                                < icon site.png
 
-								
-	string id                   : Domainname
+                                
+    string id                   : Domainname
                                 < regexp [:hostname:]
                                 < example www.example.net
                                 < tooltip The Servername of the vhost like 'www.example.com'
                                 < gridwidth 62
 
-	string sitename             : Sitename
+    string sitename             : Sitename
                                 < example My first Drupal site
                                 < tooltip The sitename of this site
                                 < gridwidth 62
-	
-	password adminpass          : Admin password
+    
+    password adminpass          : Admin password
                                 < example sPswd13t
                                 < regexp [:password:]
                                 < tooltip The password of user 'admin'
                                 < gridwidth 16
-	
-	string admin                : Email address of site admin
+    
+    string admin                : Email address of site admin
                                 < regexp [:email:]
                                 < example webmaster@example.net
                                 < flags enabled visible
                                 < tooltip Email address for the website administrator (webmaster)
                                 < gridhide true
 
-	textarea aliases            : SiteAliases (one per line, if any)
+    textarea aliases            : SiteAliases (one per line, if any)
                                 < textwidth 48
                                 < rows 12
 
@@ -105,9 +105,11 @@ class HTTPS                     < uuid 82497ad3-1642-4d18-b073-ca2f3814172f
 # AUTHD
 # ============================================================================
 authd scripts
-	script openapp-drupal-site-install
-	script openapp-drupal-deletesite
-	script openapp-drupal-sitealias
+    script openapp-drupal-site-install
+    script openapp-drupal-deletesite
+    script openapp-drupal-sitealias
+    script openapp-drupal-site-adminsettings
+
 # ----------------------------------------------------------------------------
 authd fileops
     match *.conf                : /etc/apache2/sites-enabled
@@ -116,6 +118,11 @@ authd fileops
                                 < perms 0644
 
     match **.conf               : /etc/apache2/conf.d
+                                < user root
+                                < group root
+                                < perms 0644
+
+    match ***.conf              : /etc/apache2/drupal-aliases
                                 < user root
                                 < group root
                                 < perms 0644

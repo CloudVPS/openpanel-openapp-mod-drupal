@@ -7,6 +7,7 @@ Awstats.update() {
 }
 
 A2CONFDIR=/etc/apache2/sites-enabled
+ALIASCONFDIR=/etc/apache2/drupal-aliases
 SSLDIR=/etc/ssl/private
 
 restart_apache2() {
@@ -43,18 +44,23 @@ Site.update() {
     [ -z ${SITE_ADMIN} ] && SITE_ADMIN=webmaster@unknown
 
     authd runscript openapp-drupal-sitealias removesite ${SITE_DOMAIN}
+    authd runscript openapp-drupal-site-adminsettings "${SITE_DOMAIN}" "${PASSWORD}" "${SITE_ADMIN}" "${SITE_NAME}"
 
     for ALIAS in ${ALIASES}; do
         authd runscript openapp-drupal-sitealias addalias ${SITE_DOMAIN} ${ALIAS}
     done
 
+cat <<EOB > $(pwd)/${SITE_DOMAIN}-aliases.conf
+    ServerAlias ${ALIASES}
+EOB
+
 cat <<EOB > $(pwd)/${SITE_DOMAIN}.conf
 <VirtualHost *:80>
-	ServerAdmin ${SITE_ADMIN}
-	Servername ${SITE_DOMAIN}
-    ServerAlias ${ALIASES}
+    ServerAdmin ${SITE_ADMIN}
+    Servername ${SITE_DOMAIN}
+    Include ${ALIASCONFDIR}/${SITE_DOMAIN}-aliases.conf
 
-	DocumentRoot /var/www
+    DocumentRoot /var/www
 
     CustomLog /var/log/apache2/${SITE_DOMAIN}.access.log combined
     ErrorLog  /var/log/apache2/${SITE_DOMAIN}.error.log
@@ -62,6 +68,7 @@ cat <<EOB > $(pwd)/${SITE_DOMAIN}.conf
 EOB
 
     authd installfile ${SITE_DOMAIN}.conf ${A2CONFDIR}
+    authd installfile ${SITE_DOMAIN}-aliases.conf ${ALIASCONFDIR}
 
     restart_apache2
 }
@@ -93,10 +100,6 @@ HTTPS.create() {
 
     SSLIP="*"
 
-    ALIASES=$(coreval Site aliases | tr '\n' ' ')
-
-    [ -z ${ALIASES} ] && ALIASES=${SERVERNAME}
-
 cat <<EOB > $(pwd)/${SERVERNAME}.pem
 ${SSLCERT}
 EOB
@@ -107,15 +110,15 @@ EOB
 
 cat <<EOB > $(pwd)/${SERVERNAME}-ssl.conf
 <VirtualHost ${SSLIP}:443>
-	ServerAdmin ${WEBMASTER}
-	Servername ${SERVERNAME}
-    ServerAlias ${ALIASES}
+    ServerAdmin ${WEBMASTER}
+    Servername ${SERVERNAME}
+    Include ${ALIASCONFDIR}/${SERVERNAME}-aliases.conf
 
-	DocumentRoot /var/www/
+    DocumentRoot /var/www/
 
-	SSLEngine on
-	SSLProtocol -all +TLSv1 +SSLv3
-	SSLCertificateFile ${SSLDIR}/${SERVERNAME}.pem
+    SSLEngine on
+    SSLProtocol -all +TLSv1 +SSLv3
+    SSLCertificateFile ${SSLDIR}/${SERVERNAME}.pem
 
     CustomLog /var/log/apache2/${SERVERNAME}.access.log combined
     ErrorLog  /var/log/apache2/${SERVERNAME}.error.log
@@ -124,6 +127,8 @@ EOB
 
     authd installfile ${SERVERNAME}.pem ${SSLDIR}
     authd installfile ${SERVERNAME}-ssl.conf ${A2CONFDIR}
+
+    restart_apache2
 }
 
 HTTPS.update() {
