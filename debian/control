@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 5), openpanel-dev, imagemagick
 Standards-Version: 3.7.2
 
 Package: openpanel-openapp-mod-drupal
-Architecture: any
+Architecture: all
 Pre-Depends: openpanel-core, openpanel-authd
 Depends: openpanel-core, openpanel-api-sh, ${shlibs:Depends}, ${misc:Depends}, mysql-server, mysql-client, pwgen, openapp-drush-installer, php5-cli, openpanel-validatepem, openapp-awstats, openpanel-openapp-call
 Description: OpenPanel module to manage OpenApp Drupal
